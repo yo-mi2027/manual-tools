@@ -4,6 +4,8 @@
 
 ---
 
+---
+
 * **Full Answer Mode** starts from the list of “potentially relevant sections (S1)” produced by Location Mode.
 
 * Its role is to:
@@ -14,12 +16,17 @@
 
   > “A list that exhaustively enumerates all elements needed to answer the question.”
 
-* A short natural-language summary or “conclusion” **may** be added, but it is **secondary**.
-  The **main output** is the structured list of elements, not the narrative.
+* The output of this mode **MUST** be the **chapter-wise structured list of elements**.
+  By default, you **MUST NOT** add any separate natural-language summary or conclusion section.
+
+* Only if the user **explicitly and clearly** requests a summary (for example: “Please also give me a brief summary in natural language”),
+  you **MAY** add a short summary **after** the structured list. Otherwise, do not include any global summary.
 
 ---
 
 2. Inputs and MCP tools used
+
+---
 
 ---
 
@@ -69,6 +76,8 @@ Full Answer Mode uses the following MCP tools (via manual-tools):
 
 ---
 
+---
+
 The basic flow of Full Answer Mode is:
 
 1. **Clarify the question** (what kind of elements should be enumerated).
@@ -77,12 +86,15 @@ The basic flow of Full Answer Mode is:
 4. **Integrate and deduplicate elements across sections**.
 5. **Produce the final answer**:
 
-   * A chapter-wise structured list (main part).
-   * Optionally, a very short summary (1–2 sentences) if helpful.
+   * A **chapter-wise structured list** of elements (this is the main and default output).
+
+   You MUST NOT add any separate natural-language summary or conclusion unless the user explicitly requests it.
 
 ---
 
 4. Step (1): Clarify the question
+
+---
 
 ---
 
@@ -120,6 +132,8 @@ Based on this clarification, the AI decides:
 ---
 
 5. Step (2): Retrieve and chunk the texts of S1
+
+---
 
 ---
 
@@ -162,6 +176,8 @@ From this point onward, relevance is judged at the **chunk level** with respect 
 ---
 
 6. Step (3): Extracting elements
+
+---
 
 ---
 
@@ -247,6 +263,8 @@ The focus here is to **collect all relevant elements as raw materials**, without
 
 ---
 
+---
+
 ### 7.1. Organize elements per section
 
 * For each section in S1, group and summarize all elements that were extracted from its chunks.
@@ -275,15 +293,23 @@ The focus here is to **collect all relevant elements as raw materials**, without
 
 ---
 
+---
+
 **Principle:**
 
-* The **main body** of the final answer is a **chapter-wise structured list of elements**.
-* Natural-language summary or conclusion is **optional** and should be **short** if included.
+* The **main body** and effectively the **entire default answer** is a **chapter-wise structured list of elements**.
+* By default, you **MUST NOT** add any separate natural-language summary, conclusion, or “overall answer” section.
+* Only if the user **explicitly requests** a summary (for example, “Please also give me a brief summary in natural language”) may you add a short summary **after** the structured list.
 
 ### 8.1. Basic structure of the final answer
 
-* **Per-section element lists** (main body).
-* Optionally, a **very short overview** (1–2 sentences) at the beginning or end, for user readability.
+* **Per-section element lists** (this is the main and default output).
+* **No global summary or conclusion** unless the user clearly asks for it.
+
+If the user does request a summary, the order MUST be:
+
+1. Chapter-wise structured list (complete).
+2. Short summary paragraph(s) after the list.
 
 ### 8.2. Per-section element list (main body)
 
@@ -301,13 +327,17 @@ Under that heading, list the extracted elements, for example:
   * One-line explanation…
 * …
 
-You may add a **one-line comment** per section if needed (e.g., “This section defines the basic conditions for hospitalization benefits”), but the **core requirement** is:
+You may add a **very short one-line comment** per section if needed (for example, “This section defines the basic conditions for hospitalization benefits”), but the **core requirement** is:
 
 > “To exhaustively enumerate which elements exist in this section that are relevant to the question.”
+
+Avoid turning these comments into a high-level narrative summary. The focus is on **enumerating elements**, not on storytelling.
 
 ---
 
 9. Safety and correctness policy
+
+---
 
 ---
 
@@ -334,4 +364,4 @@ You may add a **one-line comment** per section if needed (e.g., “This section 
 
   > “Completeness of the list of elements.”
 
-The AI must favor **completeness and transparency** over brevity or aggressive interpretation.
+The AI must favor **completeness and transparency** over brevity, simplification, or aggressive interpretation.
