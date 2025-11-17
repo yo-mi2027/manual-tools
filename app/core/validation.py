@@ -5,15 +5,26 @@ import re
 
 from app.schemas.toc import TocFile
 
+
 class ValidationIssue:
     def __init__(self, level: str, msg: str):
         self.level = level  # "WARN" / "ERROR"
         self.msg = msg
+
     def __repr__(self) -> str:
         return f"[{self.level}] {self.msg}"
 
-_CHAPTER_IN_TITLE = re.compile(r"^第\d+章(?:-\d+)?\s+")
+
+# NOTE:
+# Previously we enforced a loose style check that section titles should start with
+# something like "第1章 ...". This produced a lot of noisy warnings for manuals
+# that do not follow that pattern (e.g. compliance manuals, guidelines, etc.).
+# That check has been intentionally removed to avoid unnecessary startup noise.
+# If you ever want to re-enable it, you can reintroduce a pattern like:
+# _CHAPTER_IN_TITLE = re.compile(r"^第\d+章(?:-\d+)?\s+")
+
 _ID_PREFIX = re.compile(r"^(?P<num>\d{2})(?:-(?P<sub>\d+))?")
+
 
 def validate_toc_relaxed(toc: TocFile, manuals_root: Path) -> List[ValidationIssue]:
     issues: List[ValidationIssue] = []
@@ -23,20 +34,22 @@ def validate_toc_relaxed(toc: TocFile, manuals_root: Path) -> List[ValidationIss
 
     seen_ids = set()
     for e in toc.toc:
-        # file の形式・存在（存在しなくてもWARNに留める）
+        # file format / existence (missing files stay as WARN, do not block startup)
         if "/" in e.file or "\\" in e.file or not e.file.endswith(".txt"):
             issues.append(ValidationIssue("WARN", f"file suspicious: {e.file}"))
         p = manuals_root / toc.manual / e.file
         if not p.exists():
             issues.append(ValidationIssue("WARN", f"file missing: {p}"))
 
-        # id 重複
+        # duplicate id check
         if e.id in seen_ids:
             issues.append(ValidationIssue("WARN", f"duplicate id: {e.id}"))
         seen_ids.add(e.id)
 
-        # title の基本形（第n章）チェック（緩め）
-        if not _CHAPTER_IN_TITLE.match(e.title):
-            issues.append(ValidationIssue("WARN", f"title may not start with '第...章': {e.title}"))
+        # NOTE: Title style check ("第...章") has been intentionally disabled
+        # to avoid noisy warnings for non-chapter-style manuals.
+        # If needed, re-enable something like:
+        # if not _CHAPTER_IN_TITLE.match(e.title):
+        #     issues.append(ValidationIssue("WARN", f"title may not start with '第...章': {e.title}"))
 
     return issues
